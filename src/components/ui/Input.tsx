@@ -8,7 +8,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -27,24 +27,32 @@ export const Input: React.FC<InputProps> = ({
   style,
   ...props
 }) => {
+  const { colors } = useTheme();
+
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>}
       <View
         style={[
           styles.inputContainer,
-          error ? styles.inputError : null,
+          {
+            backgroundColor: colors.cardElevated,
+            borderColor: colors.cardBorder,
+          },
+          error ? { borderColor: colors.danger } : null,
         ]}
       >
         {leftIcon && <View style={styles.leftIconContainer}>{leftIcon}</View>}
         <TextInput
-          placeholderTextColor={COLORS.textMuted}
-          style={[styles.input, style]}
+          placeholderTextColor={colors.textMuted}
+          style={[styles.input, { color: colors.textPrimary }, style]}
           {...props}
         />
         {rightIcon && <View style={styles.rightIconContainer}>{rightIcon}</View>}
       </View>
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? (
+        <Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
+      ) : null}
     </View>
   );
 };
@@ -54,39 +62,32 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 8,
+    letterSpacing: 0.2,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.cardElevated,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-  },
-  inputError: {
-    borderColor: COLORS.danger,
+    borderRadius: 16,
+    paddingHorizontal: 16,
   },
   input: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
-    color: COLORS.textPrimary,
   },
   leftIconContainer: {
-    marginRight: 10,
+    marginRight: 12,
   },
   rightIconContainer: {
-    marginLeft: 10,
+    marginLeft: 12,
   },
   errorText: {
     fontSize: 12,
-    color: COLORS.danger,
     marginTop: 4,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

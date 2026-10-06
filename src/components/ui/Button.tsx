@@ -8,8 +8,10 @@ import {
   TextStyle,
   StyleProp,
   TouchableOpacityProps,
+  View,
 } from 'react-native';
-import { COLORS } from '../../constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../stores/useThemeStore';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -34,37 +36,7 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
   ...props
 }) => {
-  const getVariantStyle = () => {
-    switch (variant) {
-      case 'primary':
-        return styles.primary;
-      case 'danger':
-        return styles.danger;
-      case 'warning':
-        return styles.warning;
-      case 'secondary':
-        return styles.secondary;
-      case 'outline':
-        return styles.outline;
-      case 'ghost':
-        return styles.ghost;
-    }
-  };
-
-  const getTextVariantStyle = () => {
-    switch (variant) {
-      case 'primary':
-      case 'danger':
-      case 'warning':
-        return styles.textWhite;
-      case 'secondary':
-        return styles.textSecondary;
-      case 'outline':
-        return styles.textOutline;
-      case 'ghost':
-        return styles.textGhost;
-    }
-  };
+  const { colors, isDark } = useTheme();
 
   const getSizeStyle = () => {
     switch (size) {
@@ -88,23 +60,12 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
-  return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      disabled={disabled || loading}
-      style={[
-        styles.button,
-        getVariantStyle(),
-        getSizeStyle(),
-        disabled && styles.disabled,
-        style,
-      ]}
-      {...props}
-    >
+  const renderContent = () => (
+    <>
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'outline' ? COLORS.primary : '#FFFFFF'}
+          color={variant === 'outline' ? colors.primary : '#FFFFFF'}
         />
       ) : (
         <>
@@ -112,8 +73,12 @@ export const Button: React.FC<ButtonProps> = ({
           <Text
             style={[
               styles.textBase,
-              getTextVariantStyle(),
               getTextSizeStyle(),
+              variant === 'primary' && { color: '#091A12', fontWeight: '800' },
+              (variant === 'danger' || variant === 'warning') && { color: '#FFFFFF' },
+              variant === 'secondary' && { color: colors.textPrimary },
+              variant === 'outline' && { color: colors.primary },
+              variant === 'ghost' && { color: colors.textSecondary },
               leftIcon ? { marginLeft: 8 } : null,
               rightIcon ? { marginRight: 8 } : null,
               textStyle,
@@ -124,66 +89,106 @@ export const Button: React.FC<ButtonProps> = ({
           {rightIcon}
         </>
       )}
+    </>
+  );
+
+  if (variant === 'primary') {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.85}
+        disabled={disabled || loading}
+        style={[styles.gradientWrapper, disabled && styles.disabled, style]}
+        {...props}
+      >
+        <LinearGradient
+          colors={colors.primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.button, getSizeStyle(), styles.primaryShadow]}
+        >
+          {renderContent()}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
+  const getVariantStyle = () => {
+    switch (variant) {
+      case 'danger':
+        return { backgroundColor: colors.danger };
+      case 'warning':
+        return { backgroundColor: colors.warning };
+      case 'secondary':
+        return {
+          backgroundColor: colors.cardElevated,
+          borderWidth: 1,
+          borderColor: colors.cardBorder,
+        };
+      case 'outline':
+        return {
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderColor: colors.primary,
+        };
+      case 'ghost':
+        return { backgroundColor: 'transparent' };
+      default:
+        return {};
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      disabled={disabled || loading}
+      style={[
+        styles.button,
+        getVariantStyle(),
+        getSizeStyle(),
+        disabled && styles.disabled,
+        style,
+      ]}
+      {...props}
+    >
+      {renderContent()}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  gradientWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: 20,
   },
-  primary: {
-    backgroundColor: COLORS.primary,
-  },
-  danger: {
-    backgroundColor: COLORS.danger,
-  },
-  warning: {
-    backgroundColor: COLORS.warning,
-  },
-  secondary: {
-    backgroundColor: COLORS.cardElevated,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
+  primaryShadow: {
+    shadowColor: '#00E599',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   sm: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   md: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: 15,
+    paddingHorizontal: 22,
   },
   lg: {
     paddingVertical: 18,
-    paddingHorizontal: 24,
+    paddingHorizontal: 26,
   },
   textBase: {
     fontWeight: '700',
     textAlign: 'center',
-  },
-  textWhite: {
-    color: '#FFFFFF',
-  },
-  textSecondary: {
-    color: COLORS.textPrimary,
-  },
-  textOutline: {
-    color: COLORS.primary,
-  },
-  textGhost: {
-    color: COLORS.textSecondary,
+    letterSpacing: 0.2,
   },
   textSm: {
     fontSize: 13,

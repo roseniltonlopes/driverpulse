@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, StyleSheet, ViewProps, StyleProp, ViewStyle } from 'react-native';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 
 interface CardProps extends ViewProps {
-  variant?: 'default' | 'elevated' | 'outline' | 'gradientBorder';
+  variant?: 'default' | 'elevated' | 'outline' | 'glow';
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }
@@ -14,12 +14,28 @@ export const Card: React.FC<CardProps> = ({
   children,
   ...props
 }) => {
+  const { colors, isDark } = useTheme();
+
   return (
     <View
       style={[
         styles.card,
-        variant === 'elevated' && styles.elevated,
-        variant === 'outline' && styles.outline,
+        {
+          backgroundColor: variant === 'elevated' ? colors.cardElevated : colors.card,
+          borderColor: colors.cardBorder,
+        },
+        variant === 'elevated' && (isDark ? styles.elevatedDark : styles.elevatedLight),
+        variant === 'glow' && {
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isDark ? 0.35 : 0.15,
+          shadowRadius: 12,
+          elevation: 6,
+        },
+        variant === 'outline' && {
+          backgroundColor: 'transparent',
+          borderColor: colors.cardBorder,
+        },
         style,
       ]}
       {...props}
@@ -31,22 +47,22 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 22,
+    padding: 18,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
   },
-  elevated: {
-    backgroundColor: COLORS.cardElevated,
+  elevatedDark: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
     elevation: 4,
   },
-  outline: {
-    backgroundColor: 'transparent',
-    borderColor: COLORS.cardBorder,
+  elevatedLight: {
+    shadowColor: 'rgba(0,0,0,0.06)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 2,
   },
 });

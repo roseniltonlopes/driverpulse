@@ -11,16 +11,29 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { TrendingDown, X, DollarSign, Fuel, Utensils, Wrench, MoreHorizontal, Gauge, FileText, Check } from 'lucide-react-native';
+import {
+  TrendingDown,
+  X,
+  DollarSign,
+  Fuel,
+  Utensils,
+  Wrench,
+  MoreHorizontal,
+  Gauge,
+  FileText,
+  Check,
+} from 'lucide-react-native';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { useFinanceStore } from '../../stores/useFinanceStore';
 import { useShiftStore } from '../../stores/useShiftStore';
+import { useTheme } from '../../stores/useThemeStore';
 import { ExpenseCategory } from '../../types/database.types';
-import { COLORS, EXPENSE_INFO } from '../../constants/theme';
+import { EXPENSE_INFO } from '../../constants/theme';
 
 export default function AddExpenseModal() {
+  const { colors, isDark } = useTheme();
   const [category, setCategory] = useState<ExpenseCategory>('FUEL');
   const [amount, setAmount] = useState('');
   const [odometer, setOdometer] = useState('');
@@ -68,7 +81,10 @@ export default function AddExpenseModal() {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+      edges={['top', 'bottom']}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
@@ -77,12 +93,14 @@ export default function AddExpenseModal() {
           {/* Modal Header */}
           <View style={styles.header}>
             <View style={styles.titleRow}>
-              <View style={styles.iconCircle}>
-                <TrendingDown size={20} color={COLORS.danger} />
+              <View style={[styles.iconCircle, { backgroundColor: colors.dangerLight }]}>
+                <TrendingDown size={20} color={colors.danger} />
               </View>
               <View>
-                <Text style={styles.title}>Lançar Despesa</Text>
-                <Text style={styles.subtitle}>Combustível, manutenção e custos diários</Text>
+                <Text style={[styles.title, { color: colors.textPrimary }]}>Lançar Despesa</Text>
+                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+                  Combustível, manutenção e custos diários
+                </Text>
               </View>
             </View>
 
@@ -91,12 +109,12 @@ export default function AddExpenseModal() {
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               style={styles.closeBtn}
             >
-              <X size={20} color={COLORS.textMuted} />
+              <X size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
 
           {/* Category Selector Grid */}
-          <Text style={styles.label}>Categoria da Despesa</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Categoria da Despesa</Text>
           <View style={styles.categoryGrid}>
             {categories.map(({ key, icon: IconComponent }) => {
               const info = EXPENSE_INFO[key];
@@ -107,9 +125,9 @@ export default function AddExpenseModal() {
                   key={key}
                   style={[
                     styles.categoryCard,
-                    isSelected && {
-                      borderColor: info.color,
-                      backgroundColor: info.badgeBg,
+                    {
+                      backgroundColor: isSelected ? info.badgeBg : colors.cardElevated,
+                      borderColor: isSelected ? info.color : colors.cardBorder,
                     },
                   ]}
                   onPress={() => setCategory(key)}
@@ -119,7 +137,8 @@ export default function AddExpenseModal() {
                   <Text
                     style={[
                       styles.categoryLabel,
-                      isSelected && { color: info.textColor, fontWeight: '800' },
+                      { color: isSelected ? info.textColor : colors.textPrimary },
+                      isSelected && { fontWeight: '800' },
                     ]}
                   >
                     {info.label}
@@ -136,17 +155,19 @@ export default function AddExpenseModal() {
             keyboardType="numeric"
             value={amount}
             onChangeText={setAmount}
-            leftIcon={<DollarSign size={22} color={COLORS.danger} />}
-            style={styles.amountInput}
+            leftIcon={<DollarSign size={22} color={colors.danger} />}
+            style={[styles.amountInput, { color: colors.danger }]}
             autoFocus
           />
 
           {/* Fuel Specific Fields for Autonomy */}
           {category === 'FUEL' && (
-            <Card style={styles.fuelCard}>
+            <Card variant="elevated" style={styles.fuelCard}>
               <View style={styles.fuelCardHeader}>
-                <Fuel size={18} color={COLORS.warning} />
-                <Text style={styles.fuelCardTitle}>Dados de Abastecimento (Autonomia)</Text>
+                <Fuel size={18} color={colors.warning} />
+                <Text style={[styles.fuelCardTitle, { color: colors.warning }]}>
+                  Dados de Abastecimento (Autonomia)
+                </Text>
               </View>
 
               <View style={styles.fuelInputsRow}>
@@ -162,17 +183,17 @@ export default function AddExpenseModal() {
 
                 <View style={{ flex: 1 }}>
                   <Input
-                    label="Hodômetro Atual (km)"
+                    label="Hodômetro (km)"
                     placeholder="Ex: 48600"
                     keyboardType="numeric"
                     value={odometer}
                     onChangeText={setOdometer}
-                    leftIcon={<Gauge size={16} color={COLORS.info} />}
+                    leftIcon={<Gauge size={16} color={colors.info} />}
                   />
                 </View>
               </View>
 
-              <Text style={styles.fuelHint}>
+              <Text style={[styles.fuelHint, { color: colors.textMuted }]}>
                 💡 O registro do hodômetro e litros permite o cálculo automático da média de consumo do seu carro (km/l).
               </Text>
             </Card>
@@ -181,16 +202,21 @@ export default function AddExpenseModal() {
           {/* Notes Input */}
           <Input
             label="Observação (Opcional)"
-            placeholder="Ex: Posto Ipiranga / Troca de pastilha"
+            placeholder="Ex: Posto Ipiranga / Almoço PF"
             value={notes}
             onChangeText={setNotes}
-            leftIcon={<FileText size={18} color={COLORS.textSecondary} />}
+            leftIcon={<FileText size={18} color={colors.textSecondary} />}
           />
 
           {activeShift && (
-            <View style={styles.shiftBadgeNotice}>
-              <Check size={14} color={COLORS.warning} />
-              <Text style={styles.shiftNoticeText}>
+            <View
+              style={[
+                styles.shiftBadgeNotice,
+                { backgroundColor: colors.tagBg, borderColor: colors.tagBorder },
+              ]}
+            >
+              <Check size={14} color={colors.warning} />
+              <Text style={[styles.shiftNoticeText, { color: colors.warning }]}>
                 Esta despesa será vinculada ao seu turno ativo atual.
               </Text>
             </View>
@@ -214,7 +240,6 @@ export default function AddExpenseModal() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   container: {
     flex: 1,
@@ -237,28 +262,26 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: COLORS.dangerLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 20,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    letterSpacing: -0.4,
   },
   subtitle: {
     fontSize: 12,
-    color: COLORS.textSecondary,
     marginTop: 1,
   },
   closeBtn: {
     padding: 4,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: COLORS.textSecondary,
     marginBottom: 10,
+    letterSpacing: 0.2,
   },
   categoryGrid: {
     flexDirection: 'row',
@@ -270,27 +293,23 @@ const styles = StyleSheet.create({
     width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.cardElevated,
-    padding: 14,
-    borderRadius: 12,
+    padding: 15,
+    borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: COLORS.cardBorder,
-    gap: 8,
+    gap: 10,
   },
   categoryLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.textPrimary,
   },
   amountInput: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.danger,
+    fontSize: 24,
+    fontWeight: '900',
   },
   fuelCard: {
-    backgroundColor: COLORS.cardElevated,
-    padding: 14,
+    padding: 16,
     marginBottom: 16,
+    borderRadius: 20,
   },
   fuelCardHeader: {
     flexDirection: 'row',
@@ -301,7 +320,6 @@ const styles = StyleSheet.create({
   fuelCardTitle: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.warning,
   },
   fuelInputsRow: {
     flexDirection: 'row',
@@ -309,27 +327,24 @@ const styles = StyleSheet.create({
   },
   fuelHint: {
     fontSize: 11,
-    color: COLORS.textMuted,
     lineHeight: 16,
   },
   shiftBadgeNotice: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 14,
     gap: 8,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.25)',
   },
   shiftNoticeText: {
     fontSize: 12,
-    color: COLORS.warning,
+    fontWeight: '600',
     flex: 1,
   },
   saveBtn: {
-    borderRadius: 14,
+    borderRadius: 20,
     marginTop: 8,
   },
 });

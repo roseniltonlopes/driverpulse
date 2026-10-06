@@ -12,7 +12,7 @@ import {
 import { Play, Gauge, X } from 'lucide-react-native';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 import { useShiftStore } from '../../stores/useShiftStore';
 
 interface StartShiftModalProps {
@@ -26,6 +26,7 @@ export const StartShiftModal: React.FC<StartShiftModalProps> = ({
   onClose,
   lastOdometer = 45000,
 }) => {
+  const { colors } = useTheme();
   const [odometer, setOdometer] = useState(lastOdometer ? String(lastOdometer) : '');
   const [loading, setLoading] = useState(false);
   const startShift = useShiftStore(s => s.startShift);
@@ -59,19 +60,32 @@ export const StartShiftModal: React.FC<StartShiftModalProps> = ({
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.overlay}
       >
-        <View style={styles.content}>
+        <View
+          style={[
+            styles.content,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.cardBorder,
+            },
+          ]}
+        >
           <View style={styles.header}>
             <View style={styles.titleRow}>
-              <Play size={20} color={COLORS.primary} fill={COLORS.primary} />
-              <Text style={styles.title}>Iniciar Novo Turno</Text>
+              <View style={[styles.iconCircle, { backgroundColor: colors.primaryLight }]}>
+                <Play size={16} color={colors.primary} fill={colors.primary} />
+              </View>
+              <Text style={[styles.title, { color: colors.textPrimary }]}>Iniciar Turno</Text>
             </View>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <X size={20} color={COLORS.textMuted} />
+            <TouchableOpacity
+              onPress={onClose}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <X size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.description}>
-            Informe a quilometragem atual marcada no painel do seu carro para registrar o início da jornada.
+          <Text style={[styles.description, { color: colors.textSecondary }]}>
+            Informe a quilometragem atual do painel para registrar o início da jornada.
           </Text>
 
           <Input
@@ -80,7 +94,7 @@ export const StartShiftModal: React.FC<StartShiftModalProps> = ({
             keyboardType="numeric"
             value={odometer}
             onChangeText={setOdometer}
-            leftIcon={<Gauge size={20} color={COLORS.primary} />}
+            leftIcon={<Gauge size={20} color={colors.primary} />}
           />
 
           <View style={styles.buttonRow}>
@@ -112,11 +126,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   content: {
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 22,
+    borderRadius: 24,
+    padding: 24,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
   },
   header: {
     flexDirection: 'row',
@@ -127,16 +139,21 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.textPrimary,
   },
   description: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     marginBottom: 18,
     lineHeight: 18,
   },

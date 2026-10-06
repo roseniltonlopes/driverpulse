@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Target, TrendingUp } from 'lucide-react-native';
+import { Target, TrendingUp, Sparkles } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Card } from '../ui/Card';
-import { ProgressBar } from '../ui/ProgressBar';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 import { formatBRL } from '../../utils/formatters';
 
 interface GoalProgressBarProps {
@@ -17,41 +17,56 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
   dailyGoal,
   progress,
 }) => {
+  const { colors, isDark } = useTheme();
+  const clampedProgress = Math.min(100, Math.max(0, progress));
   const remaining = Math.max(0, dailyGoal - grossIncome);
   const isGoalReached = grossIncome >= dailyGoal;
 
   return (
-    <Card style={styles.card}>
+    <Card variant="elevated" style={styles.card}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Target size={18} color={COLORS.primary} />
-          <Text style={styles.title}>Meta Diária</Text>
+          <View style={[styles.iconCircle, { backgroundColor: colors.primaryLight }]}>
+            <Target size={18} color={colors.primary} />
+          </View>
+          <View>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>Meta Diária</Text>
+            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+              {isGoalReached ? '🎉 Meta batida hoje!' : `Faltam ${formatBRL(remaining)}`}
+            </Text>
+          </View>
         </View>
-        <View style={styles.percentageBadge}>
-          <Text style={styles.percentageText}>{Math.round(progress)}%</Text>
+
+        {/* Circular / Pill Percentage Gauge */}
+        <View style={[styles.percentageCircle, { borderColor: colors.primary, backgroundColor: colors.tagBg }]}>
+          <Text style={[styles.percentageText, { color: colors.primary }]}>
+            {Math.round(clampedProgress)}%
+          </Text>
         </View>
       </View>
 
-      <View style={styles.progressContainer}>
-        <ProgressBar
-          progress={progress}
-          color={isGoalReached ? COLORS.primary : COLORS.warning}
-          height={10}
+      {/* Modern Gradient Track */}
+      <View style={[styles.track, { backgroundColor: isDark ? '#141E19' : '#E2EDE7' }]}>
+        <LinearGradient
+          colors={colors.primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.fill, { width: `${clampedProgress}%` }]}
         />
       </View>
 
       <View style={styles.valuesRow}>
         <View>
-          <Text style={styles.subText}>Faturado Hoje</Text>
-          <Text style={styles.currentValue}>{formatBRL(grossIncome)}</Text>
+          <Text style={[styles.subText, { color: colors.textMuted }]}>Faturado</Text>
+          <Text style={[styles.currentValue, { color: colors.textPrimary }]}>
+            {formatBRL(grossIncome)}
+          </Text>
         </View>
 
         <View style={styles.alignRight}>
-          <Text style={styles.subText}>
-            {isGoalReached ? 'Meta Conquistada! 🎉' : 'Faltam'}
-          </Text>
-          <Text style={[styles.goalValue, isGoalReached ? { color: COLORS.primary } : null]}>
-            {isGoalReached ? formatBRL(dailyGoal) : formatBRL(remaining)}
+          <Text style={[styles.subText, { color: colors.textMuted }]}>Objetivo</Text>
+          <Text style={[styles.goalValue, { color: colors.primary }]}>
+            {formatBRL(dailyGoal)}
           </Text>
         </View>
       </View>
@@ -62,57 +77,73 @@ export const GoalProgressBar: React.FC<GoalProgressBarProps> = ({
 const styles = StyleSheet.create({
   card: {
     marginBottom: 16,
-    backgroundColor: COLORS.cardElevated,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+  },
+  iconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
-  percentageBadge: {
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+  subtitle: {
+    fontSize: 12,
+    marginTop: 1,
+  },
+  percentageCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   percentageText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '900',
   },
-  progressContainer: {
-    marginVertical: 4,
+  track: {
+    height: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginVertical: 6,
+  },
+  fill: {
+    height: '100%',
+    borderRadius: 5,
   },
   valuesRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: 10,
   },
   subText: {
-    fontSize: 12,
-    color: COLORS.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
     marginBottom: 2,
   },
   currentValue: {
     fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontWeight: '800',
   },
   goalValue: {
     fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
+    fontWeight: '800',
   },
   alignRight: {
     alignItems: 'flex-end',

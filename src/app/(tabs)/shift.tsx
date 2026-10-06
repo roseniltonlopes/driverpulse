@@ -17,22 +17,22 @@ import {
   PlusCircle,
   Fuel,
   Trash2,
-  CheckCircle,
   Calendar,
 } from 'lucide-react-native';
 import { useShiftStore } from '../../stores/useShiftStore';
 import { useFinanceStore } from '../../stores/useFinanceStore';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useTheme } from '../../stores/useThemeStore';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { ActiveShiftCard } from '../../components/shift/ActiveShiftCard';
 import { StartShiftModal } from '../../components/shift/StartShiftModal';
 import { EndShiftModal } from '../../components/shift/EndShiftModal';
-import { COLORS } from '../../constants/theme';
 import { formatBRL, formatKm, formatDurationFromMinutes } from '../../utils/formatters';
 import { calculateHoursWorked } from '../../utils/calculations';
 
 export default function ShiftScreen() {
+  const { colors } = useTheme();
   const activeShift = useShiftStore(s => s.activeShift);
   const shifts = useShiftStore(s => s.shifts);
   const cancelActiveShift = useShiftStore(s => s.cancelActiveShift);
@@ -58,11 +58,14 @@ export default function ShiftScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+      edges={['top', 'left', 'right']}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Gestão de Turno</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Gestão de Turno</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Acompanhe o tempo em rota, quilômetros e rendimentos em tempo real.
           </Text>
         </View>
@@ -84,49 +87,73 @@ export default function ShiftScreen() {
                 title="Cancelar Turno"
                 variant="ghost"
                 onPress={confirmCancelShift}
-                textStyle={{ color: COLORS.textMuted }}
+                textStyle={{ color: colors.textMuted }}
               />
             </View>
 
             {/* Quick entries while in shift */}
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Lançar no Turno Ativo</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                Lançar no Turno Ativo
+              </Text>
             </View>
 
             <View style={styles.quickShortcutsGrid}>
               <TouchableOpacity
-                style={styles.shortcutCard}
+                style={[
+                  styles.shortcutCard,
+                  {
+                    backgroundColor: colors.cardElevated,
+                    borderColor: colors.cardBorder,
+                  },
+                ]}
                 onPress={() => router.push('/modals/add-income' as any)}
               >
-                <PlusCircle size={22} color={COLORS.primary} />
-                <Text style={styles.shortcutTitle}>+ Corrida</Text>
-                <Text style={styles.shortcutSub}>Uber / 99 / inDrive</Text>
+                <View style={[styles.iconCircle, { backgroundColor: colors.primaryLight }]}>
+                  <PlusCircle size={20} color={colors.primary} />
+                </View>
+                <Text style={[styles.shortcutTitle, { color: colors.textPrimary }]}>+ Corrida</Text>
+                <Text style={[styles.shortcutSub, { color: colors.textMuted }]}>
+                  Uber / 99 / inDrive
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.shortcutCard}
+                style={[
+                  styles.shortcutCard,
+                  {
+                    backgroundColor: colors.cardElevated,
+                    borderColor: colors.cardBorder,
+                  },
+                ]}
                 onPress={() => router.push('/modals/add-expense' as any)}
               >
-                <Fuel size={22} color={COLORS.warning} />
-                <Text style={styles.shortcutTitle}>+ Despesa</Text>
-                <Text style={styles.shortcutSub}>Combustível / Alimentação</Text>
+                <View style={[styles.iconCircle, { backgroundColor: colors.warningLight }]}>
+                  <Fuel size={20} color={colors.warning} />
+                </View>
+                <Text style={[styles.shortcutTitle, { color: colors.textPrimary }]}>+ Despesa</Text>
+                <Text style={[styles.shortcutSub, { color: colors.textMuted }]}>
+                  Combustível / Refeição
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         ) : (
-          <Card style={styles.emptyShiftCard}>
-            <View style={styles.emptyIconCircle}>
-              <Gauge size={32} color={COLORS.primary} />
+          <Card variant="elevated" style={styles.emptyShiftCard}>
+            <View style={[styles.emptyIconCircle, { backgroundColor: colors.primaryLight }]}>
+              <Gauge size={32} color={colors.primary} />
             </View>
-            <Text style={styles.emptyTitle}>Pronto para começar a rodar?</Text>
-            <Text style={styles.emptyDesc}>
+            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+              Pronto para começar a rodar?
+            </Text>
+            <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>
               Registre o hodômetro de saída do seu veículo para calcularmos seus custos e lucros com precisão cirúrgica.
             </Text>
             <Button
               title="Iniciar Turno Agora"
               variant="primary"
               size="lg"
-              leftIcon={<Play size={18} color="#FFFFFF" fill="#FFFFFF" />}
+              leftIcon={<Play size={18} color="#091A12" fill="#091A12" />}
               onPress={() => setStartModalVisible(true)}
               style={styles.startBtn}
             />
@@ -135,12 +162,16 @@ export default function ShiftScreen() {
 
         {/* History of Closed Shifts */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Turnos Anteriores</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Turnos Anteriores
+          </Text>
         </View>
 
         {pastShifts.length === 0 ? (
           <Card style={styles.noPastShiftsCard}>
-            <Text style={styles.noPastText}>Nenhum histórico de turno registrado ainda.</Text>
+            <Text style={[styles.noPastText, { color: colors.textMuted }]}>
+              Nenhum histórico de turno registrado ainda.
+            </Text>
           </Card>
         ) : (
           pastShifts.map((s) => {
@@ -148,11 +179,11 @@ export default function ShiftScreen() {
             const hours = calculateHoursWorked(s.start_time, s.end_time);
 
             return (
-              <Card key={s.id} style={styles.historyCard}>
+              <Card key={s.id} variant="elevated" style={styles.historyCard}>
                 <View style={styles.historyHeader}>
                   <View style={styles.historyDateRow}>
-                    <Calendar size={14} color={COLORS.primary} />
-                    <Text style={styles.historyDate}>
+                    <Calendar size={14} color={colors.primary} />
+                    <Text style={[styles.historyDate, { color: colors.textPrimary }]}>
                       {new Date(s.start_time).toLocaleDateString('pt-BR', {
                         weekday: 'short',
                         day: '2-digit',
@@ -165,26 +196,34 @@ export default function ShiftScreen() {
                     onPress={() => deleteShift(s.id)}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Trash2 size={14} color={COLORS.textMuted} />
+                    <Trash2 size={13} color={colors.textMuted} />
                   </TouchableOpacity>
                 </View>
 
                 <View style={styles.historyMetricsRow}>
                   <View style={styles.historyMetricItem}>
-                    <Gauge size={14} color={COLORS.info} />
-                    <Text style={styles.historyMetricLabel}>Distância:</Text>
-                    <Text style={styles.historyMetricValue}>{formatKm(kmDriven)}</Text>
+                    <Gauge size={14} color={colors.info} />
+                    <Text style={[styles.historyMetricLabel, { color: colors.textMuted }]}>
+                      Distância:
+                    </Text>
+                    <Text style={[styles.historyMetricValue, { color: colors.textPrimary }]}>
+                      {formatKm(kmDriven)}
+                    </Text>
                   </View>
 
                   <View style={styles.historyMetricItem}>
-                    <Clock size={14} color={COLORS.warning} />
-                    <Text style={styles.historyMetricLabel}>Duração:</Text>
-                    <Text style={styles.historyMetricValue}>{formatDurationFromMinutes(hours * 60)}</Text>
+                    <Clock size={14} color={colors.warning} />
+                    <Text style={[styles.historyMetricLabel, { color: colors.textMuted }]}>
+                      Duração:
+                    </Text>
+                    <Text style={[styles.historyMetricValue, { color: colors.textPrimary }]}>
+                      {formatDurationFromMinutes(hours * 60)}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.odometerSummary}>
-                  <Text style={styles.odometerText}>
+                <View style={[styles.odometerSummary, { borderTopColor: colors.cardBorder }]}>
+                  <Text style={[styles.odometerText, { color: colors.textMuted }]}>
                     {s.start_km.toLocaleString('pt-BR')} km → {s.end_km?.toLocaleString('pt-BR')} km
                   </Text>
                 </View>
@@ -216,11 +255,10 @@ export default function ShiftScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 36,
   },
   header: {
     marginBottom: 16,
@@ -228,11 +266,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    letterSpacing: -0.6,
   },
   subtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     marginTop: 4,
   },
   shiftActions: {
@@ -240,7 +277,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   mainActionBtn: {
-    borderRadius: 14,
+    borderRadius: 18,
   },
   sectionHeader: {
     marginTop: 10,
@@ -249,7 +286,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: COLORS.textPrimary,
+    letterSpacing: -0.3,
   },
   quickShortcutsGrid: {
     flexDirection: 'row',
@@ -258,57 +295,57 @@ const styles = StyleSheet.create({
   },
   shortcutCard: {
     flex: 1,
-    backgroundColor: COLORS.cardElevated,
-    borderRadius: 14,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
     alignItems: 'center',
     gap: 6,
   },
+  iconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
   shortcutTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginTop: 2,
   },
   shortcutSub: {
     fontSize: 11,
-    color: COLORS.textMuted,
   },
   emptyShiftCard: {
     alignItems: 'center',
     padding: 24,
-    backgroundColor: COLORS.cardElevated,
+    borderRadius: 24,
     marginBottom: 20,
   },
   emptyIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.primaryLight,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '800',
-    color: COLORS.textPrimary,
     textAlign: 'center',
     marginBottom: 6,
   },
   emptyDesc: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 18,
-    marginBottom: 20,
+    lineHeight: 19,
+    marginBottom: 22,
     paddingHorizontal: 12,
   },
   startBtn: {
     width: '100%',
-    borderRadius: 14,
+    borderRadius: 18,
   },
   noPastShiftsCard: {
     alignItems: 'center',
@@ -316,12 +353,11 @@ const styles = StyleSheet.create({
   },
   noPastText: {
     fontSize: 13,
-    color: COLORS.textMuted,
   },
   historyCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 10,
-    backgroundColor: COLORS.cardElevated,
+    borderRadius: 20,
   },
   historyHeader: {
     flexDirection: 'row',
@@ -337,7 +373,6 @@ const styles = StyleSheet.create({
   historyDate: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.textPrimary,
     textTransform: 'capitalize',
   },
   historyMetricsRow: {
@@ -352,21 +387,17 @@ const styles = StyleSheet.create({
   },
   historyMetricLabel: {
     fontSize: 12,
-    color: COLORS.textMuted,
   },
   historyMetricValue: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontWeight: '800',
   },
   odometerSummary: {
     borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
     paddingTop: 8,
     marginTop: 4,
   },
   odometerText: {
     fontSize: 11,
-    color: COLORS.textMuted,
   },
 });

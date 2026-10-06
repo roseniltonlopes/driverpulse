@@ -13,28 +13,30 @@ import {
   TrendingUp,
   TrendingDown,
   DollarSign,
-  PlusCircle,
-  MinusCircle,
   Car,
   Clock,
   Gauge,
   HelpCircle,
+  Sun,
+  Moon,
+  Sparkles,
 } from 'lucide-react-native';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useShiftStore } from '../../stores/useShiftStore';
 import { useFinanceStore } from '../../stores/useFinanceStore';
+import { useTheme } from '../../stores/useThemeStore';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
 import { GoalProgressBar } from '../../components/dashboard/GoalProgressBar';
 import { MetricCard } from '../../components/dashboard/MetricCard';
 import { ShiftStatusBanner } from '../../components/dashboard/ShiftStatusBanner';
+import { QuickActionsGrid } from '../../components/dashboard/QuickActionsGrid';
 import { RecentTransactionsList } from '../../components/dashboard/RecentTransactionsList';
 import { StartShiftModal } from '../../components/shift/StartShiftModal';
 import { EndShiftModal } from '../../components/shift/EndShiftModal';
-import { COLORS } from '../../constants/theme';
 import { formatBRL, formatKm } from '../../utils/formatters';
 
 export default function DashboardScreen() {
+  const { colors, isDark, toggleTheme } = useTheme();
   const profile = useAuthStore(s => s.profile);
   const isGuest = useAuthStore(s => s.isGuest);
   const activeShift = useShiftStore(s => s.activeShift);
@@ -50,7 +52,6 @@ export default function DashboardScreen() {
   const [endModalVisible, setEndModalVisible] = useState(false);
   const [showFormulaDetails, setShowFormulaDetails] = useState(false);
 
-  // If there is an active shift, calculate current shift metrics; otherwise today's metrics
   const metrics = activeShift ? getMetricsForCurrentShift() : getMetricsForToday();
   const dailyGoal = profile?.daily_goal || 250.00;
 
@@ -61,7 +62,10 @@ export default function DashboardScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+      edges={['top', 'left', 'right']}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -69,28 +73,46 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
-        {/* Header */}
+        {/* Header with Greeting and Theme Toggle Switch */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greetingText}>Olá, {profile?.name || 'Motorista'}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.greetingLabel, { color: colors.textMuted }]}>
+              Bom dia!
+            </Text>
+            <Text style={[styles.greetingText, { color: colors.textPrimary }]}>
+              {profile?.name || 'Motorista'}
+            </Text>
             <View style={styles.vehicleBadge}>
-              <Car size={14} color={COLORS.textSecondary} />
-              <Text style={styles.vehicleText}>
+              <Car size={13} color={colors.textSecondary} />
+              <Text style={[styles.vehicleText, { color: colors.textSecondary }]}>
                 {profile?.vehicle_model || 'Veículo Padrão'}
               </Text>
             </View>
           </View>
 
-          {isGuest && (
-            <View style={styles.demoBadge}>
-              <Text style={styles.demoBadgeText}>Modo Offline / Demonstração</Text>
-            </View>
-          )}
+          {/* Quick Theme Switcher Button */}
+          <TouchableOpacity
+            style={[
+              styles.themeToggleBtn,
+              {
+                backgroundColor: colors.cardElevated,
+                borderColor: colors.cardBorder,
+              },
+            ]}
+            onPress={toggleTheme}
+            activeOpacity={0.8}
+          >
+            {isDark ? (
+              <Sun size={18} color="#FBBF24" />
+            ) : (
+              <Moon size={18} color={colors.primary} />
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Shift Status Widget */}
@@ -100,17 +122,17 @@ export default function DashboardScreen() {
           onEndShiftPress={() => setEndModalVisible(true)}
         />
 
-        {/* Hero Card: Lucro Líquido Real */}
-        <Card style={styles.heroCard}>
+        {/* Hero Card: Lucro Líquido Real (Inspired by Daily Reflection card) */}
+        <Card variant="elevated" style={styles.heroCard}>
           <View style={styles.heroTopRow}>
             <View>
-              <Text style={styles.heroLabel}>
+              <Text style={[styles.heroLabel, { color: colors.textMuted }]}>
                 {activeShift ? 'LUCRO LÍQUIDO DO TURNO' : 'LUCRO LÍQUIDO DE HOJE'}
               </Text>
               <Text
                 style={[
                   styles.heroValue,
-                  metrics.netProfit < 0 ? { color: COLORS.danger } : { color: COLORS.primary },
+                  { color: metrics.netProfit < 0 ? colors.danger : colors.primary },
                 ]}
               >
                 {formatBRL(metrics.netProfit)}
@@ -118,58 +140,70 @@ export default function DashboardScreen() {
             </View>
 
             <TouchableOpacity
-              style={styles.formulaToggle}
+              style={[styles.formulaToggle, { backgroundColor: colors.tagBg }]}
               onPress={() => setShowFormulaDetails(!showFormulaDetails)}
             >
-              <HelpCircle size={18} color={COLORS.textMuted} />
+              <HelpCircle size={16} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
           {/* Real Cost Deduction Breakdown */}
           {showFormulaDetails && (
-            <View style={styles.formulaBox}>
-              <Text style={styles.formulaTitle}>Cálculo do Lucro Real:</Text>
+            <View style={[styles.formulaBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Text style={[styles.formulaTitle, { color: colors.textSecondary }]}>
+                Cálculo do Lucro Real:
+              </Text>
               <View style={styles.formulaRow}>
-                <Text style={styles.formulaItem}>Faturamento Bruto:</Text>
-                <Text style={[styles.formulaNum, { color: COLORS.primary }]}>
+                <Text style={[styles.formulaItem, { color: colors.textMuted }]}>
+                  Faturamento Bruto:
+                </Text>
+                <Text style={[styles.formulaNum, { color: colors.primary }]}>
                   +{formatBRL(metrics.totalGrossIncome)}
                 </Text>
               </View>
               <View style={styles.formulaRow}>
-                <Text style={styles.formulaItem}>Despesas Diretas (Combustível/Alimentação):</Text>
-                <Text style={[styles.formulaNum, { color: COLORS.danger }]}>
+                <Text style={[styles.formulaItem, { color: colors.textMuted }]}>
+                  Despesas Diretas (Combustível/Refeição):
+                </Text>
+                <Text style={[styles.formulaNum, { color: colors.danger }]}>
                   -{formatBRL(metrics.totalDirectExpenses)}
                 </Text>
               </View>
               <View style={styles.formulaRow}>
-                <Text style={styles.formulaItem}>
-                  Reserva Manutenção ({formatBRL(profile?.maintenance_cost_per_km || 0.20)}/km rodado):
+                <Text style={[styles.formulaItem, { color: colors.textMuted }]}>
+                  Reserva Desgaste ({formatBRL(profile?.maintenance_cost_per_km || 0.20)}/km rodado):
                 </Text>
-                <Text style={[styles.formulaNum, { color: COLORS.warning }]}>
+                <Text style={[styles.formulaNum, { color: colors.warning }]}>
                   -{formatBRL(metrics.estimatedMaintenanceCost)}
                 </Text>
               </View>
             </View>
           )}
 
-          <View style={styles.heroBottomRow}>
+          <View style={[styles.heroBottomRow, { backgroundColor: colors.card }]}>
             <View style={styles.heroMiniStat}>
-              <Text style={styles.heroMiniLabel}>Faturamento</Text>
-              <Text style={styles.heroMiniIncome}>{formatBRL(metrics.totalGrossIncome)}</Text>
+              <Text style={[styles.heroMiniLabel, { color: colors.textMuted }]}>Faturamento</Text>
+              <Text style={[styles.heroMiniIncome, { color: colors.primary }]}>
+                {formatBRL(metrics.totalGrossIncome)}
+              </Text>
             </View>
 
-            <View style={styles.heroMiniDivider} />
+            <View style={[styles.heroMiniDivider, { backgroundColor: colors.cardBorder }]} />
 
             <View style={styles.heroMiniStat}>
-              <Text style={styles.heroMiniLabel}>Despesas Diretas</Text>
-              <Text style={styles.heroMiniExpense}>{formatBRL(metrics.totalDirectExpenses)}</Text>
+              <Text style={[styles.heroMiniLabel, { color: colors.textMuted }]}>Despesas</Text>
+              <Text style={[styles.heroMiniExpense, { color: colors.danger }]}>
+                {formatBRL(metrics.totalDirectExpenses)}
+              </Text>
             </View>
 
-            <View style={styles.heroMiniDivider} />
+            <View style={[styles.heroMiniDivider, { backgroundColor: colors.cardBorder }]} />
 
             <View style={styles.heroMiniStat}>
-              <Text style={styles.heroMiniLabel}>Manutenção Est.</Text>
-              <Text style={styles.heroMiniWarning}>{formatBRL(metrics.estimatedMaintenanceCost)}</Text>
+              <Text style={[styles.heroMiniLabel, { color: colors.textMuted }]}>Desgaste Est.</Text>
+              <Text style={[styles.heroMiniWarning, { color: colors.warning }]}>
+                {formatBRL(metrics.estimatedMaintenanceCost)}
+              </Text>
             </View>
           </View>
         </Card>
@@ -181,69 +215,46 @@ export default function DashboardScreen() {
           progress={metrics.dailyGoalProgress}
         />
 
+        {/* Quick Actions (4-item grid inspired by Serenity screenshot) */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Ações Rápidas</Text>
+        </View>
+
+        <QuickActionsGrid />
+
         {/* Operational Efficiency KPIs Grid */}
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Indicadores Operacionais</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Indicadores Operacionais
+          </Text>
         </View>
 
         <View style={styles.metricsGrid}>
           <MetricCard
             title="Rendimento / km"
             value={metrics.totalKmDriven > 0 ? `${formatBRL(metrics.profitPerKm)}/km` : '--'}
-            subtitle={metrics.totalKmDriven > 0 ? `Rodados: ${formatKm(metrics.totalKmDriven)}` : 'Inicie o turno'}
-            icon={<Gauge size={16} color={COLORS.primary} />}
+            subtitle={metrics.totalKmDriven > 0 ? `Rodados: ${formatKm(metrics.totalKmDriven)}` : 'Km rodados'}
+            icon={<Gauge size={16} color={colors.primary} />}
             variant="primary"
+            showBars={true}
           />
 
           <MetricCard
             title="Rendimento / hora"
             value={metrics.totalHoursWorked > 0 ? `${formatBRL(metrics.profitPerHour)}/h` : '--'}
-            subtitle={metrics.totalHoursWorked > 0 ? `${metrics.totalHoursWorked}h trabalhadas` : 'Tempo rodado'}
-            icon={<Clock size={16} color={COLORS.info} />}
+            subtitle={metrics.totalHoursWorked > 0 ? `${metrics.totalHoursWorked}h em rota` : 'Tempo rodado'}
+            icon={<Clock size={16} color={colors.info} />}
             variant="info"
           />
         </View>
 
-        {/* Quick Actions for transactions */}
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Lançamento Rápido</Text>
-        </View>
-
-        <View style={styles.quickActionsRow}>
-          <TouchableOpacity
-            style={[styles.quickActionButton, styles.incomeActionButton]}
-            activeOpacity={0.85}
-            onPress={() => router.push('/modals/add-income' as any)}
-          >
-            <View style={styles.actionIconBoxIncome}>
-              <TrendingUp size={20} color={COLORS.primary} />
-            </View>
-            <View>
-              <Text style={styles.actionButtonTitle}>+ Receita</Text>
-              <Text style={styles.actionButtonSubtitle}>Uber, 99, inDrive...</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.quickActionButton, styles.expenseActionButton]}
-            activeOpacity={0.85}
-            onPress={() => router.push('/modals/add-expense' as any)}
-          >
-            <View style={styles.actionIconBoxExpense}>
-              <TrendingDown size={20} color={COLORS.danger} />
-            </View>
-            <View>
-              <Text style={styles.actionButtonTitle}>+ Despesa</Text>
-              <Text style={styles.actionButtonSubtitle}>Combustível, almoço...</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
         {/* Recent Transactions List */}
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Movimentações Recentes</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Movimentações Recentes
+          </Text>
           <TouchableOpacity onPress={() => router.push('/(tabs)/history' as any)}>
-            <Text style={styles.seeAllText}>Ver todas</Text>
+            <Text style={[styles.seeAllText, { color: colors.primary }]}>Ver todas</Text>
           </TouchableOpacity>
         </View>
 
@@ -276,53 +287,49 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 36,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 16,
   },
+  greetingLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
   greetingText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    letterSpacing: -0.5,
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: -0.6,
   },
   vehicleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 4,
+    marginTop: 3,
   },
   vehicleText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
   },
-  demoBadge: {
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+  themeToggleBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
-  },
-  demoBadgeText: {
-    color: '#60A5FA',
-    fontSize: 11,
-    fontWeight: '700',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   heroCard: {
-    backgroundColor: COLORS.cardElevated,
-    padding: 18,
+    padding: 20,
     marginBottom: 16,
-    borderColor: COLORS.cardBorder,
+    borderRadius: 24,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -330,32 +337,32 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   heroLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
-    color: COLORS.textMuted,
     letterSpacing: 0.8,
   },
   heroValue: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '900',
     letterSpacing: -1,
     marginTop: 4,
   },
   formulaToggle: {
-    padding: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   formulaBox: {
-    backgroundColor: COLORS.card,
-    padding: 12,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 14,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
   },
   formulaTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textSecondary,
     marginBottom: 6,
   },
   formulaRow: {
@@ -365,20 +372,18 @@ const styles = StyleSheet.create({
   },
   formulaItem: {
     fontSize: 12,
-    color: COLORS.textMuted,
     flex: 1,
   },
   formulaNum: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   heroBottomRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     marginTop: 14,
   },
   heroMiniStat: {
@@ -388,97 +393,43 @@ const styles = StyleSheet.create({
   heroMiniDivider: {
     width: 1,
     height: '70%',
-    backgroundColor: COLORS.cardBorder,
   },
   heroMiniLabel: {
     fontSize: 10,
-    color: COLORS.textMuted,
     marginBottom: 2,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   heroMiniIncome: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   heroMiniExpense: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.danger,
   },
   heroMiniWarning: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.warning,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
     marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: COLORS.textPrimary,
+    letterSpacing: -0.3,
   },
   seeAllText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primary,
+    fontWeight: '800',
   },
   metricsGrid: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
-  },
-  quickActionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  quickActionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 10,
-  },
-  incomeActionButton: {
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-    borderColor: 'rgba(16, 185, 129, 0.3)',
-  },
-  expenseActionButton: {
-    backgroundColor: 'rgba(239, 68, 68, 0.08)',
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-  },
-  actionIconBoxIncome: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionIconBoxExpense: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.dangerLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionButtonTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-  },
-  actionButtonSubtitle: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    marginTop: 1,
   },
 });

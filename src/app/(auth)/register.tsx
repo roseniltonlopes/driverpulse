@@ -15,9 +15,10 @@ import { User, Mail, Lock, Car, ArrowLeft, ArrowRight } from 'lucide-react-nativ
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/useAuthStore';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 
 export default function RegisterScreen() {
+  const { colors } = useTheme();
   const [name, setName] = useState('');
   const [vehicleModel, setVehicleModel] = useState('');
   const [email, setEmail] = useState('');
@@ -50,7 +51,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
@@ -60,13 +61,13 @@ export default function RegisterScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <ArrowLeft size={20} color={COLORS.textSecondary} />
-            <Text style={styles.backText}>Voltar</Text>
+            <ArrowLeft size={20} color={colors.textSecondary} />
+            <Text style={[styles.backText, { color: colors.textSecondary }]}>Voltar</Text>
           </TouchableOpacity>
 
           <View style={styles.header}>
-            <Text style={styles.title}>Criar Nova Conta</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>Criar Nova Conta</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Comece a controlar o lucro real do seu dia a dia ao volante.
             </Text>
           </View>
@@ -77,7 +78,7 @@ export default function RegisterScreen() {
               placeholder="Ex: Carlos Silva"
               value={name}
               onChangeText={setName}
-              leftIcon={<User size={18} color={COLORS.textSecondary} />}
+              leftIcon={<User size={18} color={colors.textSecondary} />}
             />
 
             <Input
@@ -85,7 +86,7 @@ export default function RegisterScreen() {
               placeholder="Ex: Fiat Cronos 1.3"
               value={vehicleModel}
               onChangeText={setVehicleModel}
-              leftIcon={<Car size={18} color={COLORS.textSecondary} />}
+              leftIcon={<Car size={18} color={colors.textSecondary} />}
             />
 
             <Input
@@ -95,7 +96,7 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
-              leftIcon={<Mail size={18} color={COLORS.textSecondary} />}
+              leftIcon={<Mail size={18} color={colors.textSecondary} />}
             />
 
             <Input
@@ -104,7 +105,7 @@ export default function RegisterScreen() {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              leftIcon={<Lock size={18} color={COLORS.textSecondary} />}
+              leftIcon={<Lock size={18} color={colors.textSecondary} />}
             />
 
             <Button
@@ -112,7 +113,7 @@ export default function RegisterScreen() {
               variant="primary"
               size="lg"
               loading={loading}
-              rightIcon={<ArrowRight size={18} color="#FFFFFF" />}
+              rightIcon={<ArrowRight size={18} color="#091A12" />}
               onPress={handleRegister}
               style={styles.registerBtn}
             />
@@ -126,7 +127,6 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   container: {
     flex: 1,
@@ -142,7 +142,6 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 14,
-    color: COLORS.textSecondary,
     fontWeight: '600',
   },
   header: {
@@ -151,11 +150,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     marginTop: 4,
     lineHeight: 18,
   },
@@ -163,7 +161,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   registerBtn: {
-    borderRadius: 14,
+    borderRadius: 20,
     marginTop: 12,
   },
 });

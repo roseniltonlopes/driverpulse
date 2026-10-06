@@ -10,21 +10,19 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   CalendarDays,
-  TrendingUp,
-  TrendingDown,
   Gauge,
   Clock,
   Fuel,
   DollarSign,
-  PieChart,
 } from 'lucide-react-native';
 import { useFinanceStore } from '../../stores/useFinanceStore';
 import { useShiftStore } from '../../stores/useShiftStore';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useTheme } from '../../stores/useThemeStore';
 import { Card } from '../../components/ui/Card';
 import { MetricCard } from '../../components/dashboard/MetricCard';
 import { RecentTransactionsList } from '../../components/dashboard/RecentTransactionsList';
-import { COLORS, PLATFORM_INFO, EXPENSE_INFO } from '../../constants/theme';
+import { PLATFORM_INFO, EXPENSE_INFO } from '../../constants/theme';
 import { formatBRL, formatKm, formatKmPerLiter } from '../../utils/formatters';
 import {
   calculateDashboardMetrics,
@@ -35,6 +33,7 @@ import {
 type PeriodFilter = 'TODAY' | 'WEEK' | 'ALL';
 
 export default function HistoryScreen() {
+  const { colors, isDark } = useTheme();
   const [period, setPeriod] = useState<PeriodFilter>('WEEK');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -51,7 +50,6 @@ export default function HistoryScreen() {
     setRefreshing(false);
   };
 
-  // Filter items according to chosen period
   const filterData = () => {
     const now = new Date();
     const costPerKm = profile?.maintenance_cost_per_km || 0.20;
@@ -87,7 +85,10 @@ export default function HistoryScreen() {
   const { filteredTxs, metrics, incomeBreakdown, expenseBreakdown } = filterData();
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+      edges={['top', 'left', 'right']}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -95,51 +96,80 @@ export default function HistoryScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Relatórios e Histórico</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Relatórios e Histórico</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Visão detalhada do seu rendimento líquido e balanço operacional.
           </Text>
         </View>
 
         {/* Period Selector Filter */}
-        <View style={styles.periodSelector}>
+        <View
+          style={[
+            styles.periodSelector,
+            { backgroundColor: colors.card, borderColor: colors.cardBorder },
+          ]}
+        >
           <TouchableOpacity
-            style={[styles.periodBtn, period === 'TODAY' && styles.periodBtnActive]}
+            style={[
+              styles.periodBtn,
+              period === 'TODAY' && { backgroundColor: colors.cardElevated },
+            ]}
             onPress={() => setPeriod('TODAY')}
           >
-            <Text style={[styles.periodText, period === 'TODAY' && styles.periodTextActive]}>
+            <Text
+              style={[
+                styles.periodText,
+                { color: period === 'TODAY' ? colors.primary : colors.textMuted },
+              ]}
+            >
               Hoje
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.periodBtn, period === 'WEEK' && styles.periodBtnActive]}
+            style={[
+              styles.periodBtn,
+              period === 'WEEK' && { backgroundColor: colors.cardElevated },
+            ]}
             onPress={() => setPeriod('WEEK')}
           >
-            <Text style={[styles.periodText, period === 'WEEK' && styles.periodTextActive]}>
+            <Text
+              style={[
+                styles.periodText,
+                { color: period === 'WEEK' ? colors.primary : colors.textMuted },
+              ]}
+            >
               Últimos 7 Dias
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.periodBtn, period === 'ALL' && styles.periodBtnActive]}
+            style={[
+              styles.periodBtn,
+              period === 'ALL' && { backgroundColor: colors.cardElevated },
+            ]}
             onPress={() => setPeriod('ALL')}
           >
-            <Text style={[styles.periodText, period === 'ALL' && styles.periodTextActive]}>
+            <Text
+              style={[
+                styles.periodText,
+                { color: period === 'ALL' ? colors.primary : colors.textMuted },
+              ]}
+            >
               Todo o Período
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Consolidated Net Profit Hero */}
-        <Card style={styles.heroCard}>
-          <Text style={styles.heroLabel}>
+        <Card variant="elevated" style={styles.heroCard}>
+          <Text style={[styles.heroLabel, { color: colors.textMuted }]}>
             {period === 'TODAY'
               ? 'LUCRO LÍQUIDO CONSOLIDADO (HOJE)'
               : period === 'WEEK'
@@ -149,26 +179,32 @@ export default function HistoryScreen() {
           <Text
             style={[
               styles.heroValue,
-              metrics.netProfit < 0 ? { color: COLORS.danger } : { color: COLORS.primary },
+              { color: metrics.netProfit < 0 ? colors.danger : colors.primary },
             ]}
           >
             {formatBRL(metrics.netProfit)}
           </Text>
 
-          <View style={styles.heroRow}>
+          <View style={[styles.heroRow, { borderTopColor: colors.cardBorder }]}>
             <View style={styles.heroCol}>
-              <Text style={styles.heroColLabel}>Faturamento</Text>
-              <Text style={styles.heroIncome}>{formatBRL(metrics.totalGrossIncome)}</Text>
+              <Text style={[styles.heroColLabel, { color: colors.textMuted }]}>Faturamento</Text>
+              <Text style={[styles.heroIncome, { color: colors.primary }]}>
+                {formatBRL(metrics.totalGrossIncome)}
+              </Text>
             </View>
 
             <View style={styles.heroCol}>
-              <Text style={styles.heroColLabel}>Despesas Diretas</Text>
-              <Text style={styles.heroExpense}>-{formatBRL(metrics.totalDirectExpenses)}</Text>
+              <Text style={[styles.heroColLabel, { color: colors.textMuted }]}>Despesas</Text>
+              <Text style={[styles.heroExpense, { color: colors.danger }]}>
+                -{formatBRL(metrics.totalDirectExpenses)}
+              </Text>
             </View>
 
             <View style={styles.heroCol}>
-              <Text style={styles.heroColLabel}>Desgaste Est.</Text>
-              <Text style={styles.heroWarning}>-{formatBRL(metrics.estimatedMaintenanceCost)}</Text>
+              <Text style={[styles.heroColLabel, { color: colors.textMuted }]}>Desgaste Est.</Text>
+              <Text style={[styles.heroWarning, { color: colors.warning }]}>
+                -{formatBRL(metrics.estimatedMaintenanceCost)}
+              </Text>
             </View>
           </View>
         </Card>
@@ -179,7 +215,7 @@ export default function HistoryScreen() {
             title="Quilômetros"
             value={formatKm(metrics.totalKmDriven)}
             subtitle="Distância total"
-            icon={<Gauge size={16} color={COLORS.info} />}
+            icon={<Gauge size={16} color={colors.info} />}
             variant="info"
           />
 
@@ -187,7 +223,7 @@ export default function HistoryScreen() {
             title="Tempo Rodado"
             value={`${metrics.totalHoursWorked}h`}
             subtitle="Horas em turno"
-            icon={<Clock size={16} color={COLORS.warning} />}
+            icon={<Clock size={16} color={colors.warning} />}
             variant="warning"
           />
         </View>
@@ -197,70 +233,83 @@ export default function HistoryScreen() {
             title="Rendimento / km"
             value={metrics.totalKmDriven > 0 ? `${formatBRL(metrics.profitPerKm)}/km` : '--'}
             subtitle="Eficiência por km"
-            icon={<DollarSign size={16} color={COLORS.primary} />}
+            icon={<DollarSign size={16} color={colors.primary} />}
             variant="primary"
+            showBars={true}
           />
 
           <MetricCard
             title="Autonomia Estimada"
             value={formatKmPerLiter(metrics.fuelAutonomyKmPerLiter)}
             subtitle="Média de consumo"
-            icon={<Fuel size={16} color={COLORS.categoryFuel} />}
+            icon={<Fuel size={16} color={colors.warning} />}
             variant="default"
           />
         </View>
 
         {/* Platform Breakdown */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Receitas por Plataforma</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Receitas por Plataforma
+          </Text>
         </View>
 
-        <Card style={styles.breakdownCard}>
+        <Card variant="elevated" style={styles.breakdownCard}>
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: PLATFORM_INFO.UBER.color }]} />
-              <Text style={styles.platformName}>Uber</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>Uber</Text>
             </View>
-            <Text style={styles.platformValue}>{formatBRL(incomeBreakdown.uber)}</Text>
+            <Text style={[styles.platformValue, { color: colors.textPrimary }]}>
+              {formatBRL(incomeBreakdown.uber)}
+            </Text>
           </View>
 
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: PLATFORM_INFO['99'].color }]} />
-              <Text style={styles.platformName}>99 App</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>99 App</Text>
             </View>
-            <Text style={styles.platformValue}>{formatBRL(incomeBreakdown.ninetyNine)}</Text>
+            <Text style={[styles.platformValue, { color: colors.textPrimary }]}>
+              {formatBRL(incomeBreakdown.ninetyNine)}
+            </Text>
           </View>
 
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: PLATFORM_INFO.INDRIVE.color }]} />
-              <Text style={styles.platformName}>inDrive</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>inDrive</Text>
             </View>
-            <Text style={styles.platformValue}>{formatBRL(incomeBreakdown.inDrive)}</Text>
+            <Text style={[styles.platformValue, { color: colors.textPrimary }]}>
+              {formatBRL(incomeBreakdown.inDrive)}
+            </Text>
           </View>
 
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: PLATFORM_INFO.PRIVATE.color }]} />
-              <Text style={styles.platformName}>Particular / Outros</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>Particular / Outros</Text>
             </View>
-            <Text style={styles.platformValue}>{formatBRL(incomeBreakdown.private)}</Text>
+            <Text style={[styles.platformValue, { color: colors.textPrimary }]}>
+              {formatBRL(incomeBreakdown.private)}
+            </Text>
           </View>
         </Card>
 
         {/* Category Breakdown */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Despesas por Categoria</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Despesas por Categoria
+          </Text>
         </View>
 
-        <Card style={styles.breakdownCard}>
+        <Card variant="elevated" style={styles.breakdownCard}>
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: EXPENSE_INFO.FUEL.color }]} />
-              <Text style={styles.platformName}>Combustível</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>Combustível</Text>
             </View>
-            <Text style={[styles.platformValue, { color: COLORS.danger }]}>
+            <Text style={[styles.platformValue, { color: colors.danger }]}>
               {formatBRL(expenseBreakdown.fuel)}
             </Text>
           </View>
@@ -268,9 +317,9 @@ export default function HistoryScreen() {
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: EXPENSE_INFO.FOOD.color }]} />
-              <Text style={styles.platformName}>Alimentação</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>Alimentação</Text>
             </View>
-            <Text style={[styles.platformValue, { color: COLORS.danger }]}>
+            <Text style={[styles.platformValue, { color: colors.danger }]}>
               {formatBRL(expenseBreakdown.food)}
             </Text>
           </View>
@@ -278,9 +327,9 @@ export default function HistoryScreen() {
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: EXPENSE_INFO.MAINTENANCE.color }]} />
-              <Text style={styles.platformName}>Manutenção / Óleo</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>Manutenção / Óleo</Text>
             </View>
-            <Text style={[styles.platformValue, { color: COLORS.danger }]}>
+            <Text style={[styles.platformValue, { color: colors.danger }]}>
               {formatBRL(expenseBreakdown.maintenance)}
             </Text>
           </View>
@@ -288,9 +337,9 @@ export default function HistoryScreen() {
           <View style={styles.breakdownRow}>
             <View style={styles.platformIndicator}>
               <View style={[styles.platformDot, { backgroundColor: EXPENSE_INFO.OTHER.color }]} />
-              <Text style={styles.platformName}>Outros</Text>
+              <Text style={[styles.platformName, { color: colors.textPrimary }]}>Outros</Text>
             </View>
-            <Text style={[styles.platformValue, { color: COLORS.danger }]}>
+            <Text style={[styles.platformValue, { color: colors.danger }]}>
               {formatBRL(expenseBreakdown.other)}
             </Text>
           </View>
@@ -298,7 +347,9 @@ export default function HistoryScreen() {
 
         {/* Transaction History List */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Todas as Movimentações ({filteredTxs.length})</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Todas as Movimentações ({filteredTxs.length})
+          </Text>
         </View>
 
         <RecentTransactionsList
@@ -314,11 +365,10 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 36,
   },
   header: {
     marginBottom: 16,
@@ -326,52 +376,41 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    letterSpacing: -0.6,
   },
   subtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     marginTop: 4,
   },
   periodSelector: {
     flexDirection: 'row',
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 4,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
   },
   periodBtn: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 9,
     alignItems: 'center',
-    borderRadius: 8,
-  },
-  periodBtnActive: {
-    backgroundColor: COLORS.cardElevated,
+    borderRadius: 12,
   },
   periodText: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textMuted,
-  },
-  periodTextActive: {
-    color: COLORS.primary,
   },
   heroCard: {
-    backgroundColor: COLORS.cardElevated,
-    padding: 18,
+    padding: 20,
     marginBottom: 16,
+    borderRadius: 22,
   },
   heroLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: COLORS.textMuted,
     letterSpacing: 0.8,
   },
   heroValue: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '900',
     marginTop: 4,
     marginBottom: 14,
@@ -380,7 +419,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
     paddingTop: 12,
   },
   heroCol: {
@@ -388,24 +426,20 @@ const styles = StyleSheet.create({
   },
   heroColLabel: {
     fontSize: 10,
-    color: COLORS.textMuted,
     marginBottom: 2,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   heroIncome: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   heroExpense: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.danger,
   },
   heroWarning: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.warning,
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -419,13 +453,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: COLORS.textPrimary,
+    letterSpacing: -0.3,
   },
   breakdownCard: {
-    padding: 14,
-    backgroundColor: COLORS.cardElevated,
-    gap: 10,
+    padding: 16,
+    gap: 12,
     marginBottom: 16,
+    borderRadius: 22,
   },
   breakdownRow: {
     flexDirection: 'row',
@@ -438,18 +472,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   platformDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   platformName: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.textPrimary,
   },
   platformValue: {
     fontSize: 14,
     fontWeight: '800',
-    color: COLORS.textPrimary,
   },
 });

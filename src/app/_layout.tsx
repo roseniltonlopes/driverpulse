@@ -5,15 +5,18 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useShiftStore } from '../stores/useShiftStore';
 import { useFinanceStore } from '../stores/useFinanceStore';
-import { COLORS } from '../constants/theme';
+import { useThemeStore, useTheme } from '../stores/useThemeStore';
 
 export default function RootLayout() {
   const initializeAuth = useAuthStore(s => s.initialize);
   const loadShifts = useShiftStore(s => s.loadShifts);
   const loadTransactions = useFinanceStore(s => s.loadTransactions);
+  const initializeTheme = useThemeStore(s => s.initializeTheme);
+  const { colors, isDark } = useTheme();
 
   useEffect(() => {
     const initApp = async () => {
+      await initializeTheme();
       await initializeAuth();
       await loadShifts();
       await loadTransactions();
@@ -23,12 +26,12 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         initialRouteName="(tabs)"
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: COLORS.background },
+          contentStyle: { backgroundColor: colors.background },
           animation: 'fade',
         }}
       >

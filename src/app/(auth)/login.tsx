@@ -10,14 +10,15 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, Link } from 'expo-router';
-import { Mail, Lock, Gauge, ArrowRight, Sparkles } from 'lucide-react-native';
+import { router } from 'expo-router';
+import { Mail, Lock, Gauge, ArrowRight, Sparkles, Sun, Moon } from 'lucide-react-native';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/useAuthStore';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 
 export default function LoginScreen() {
+  const { colors, isDark, toggleTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,20 +49,38 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Top Theme Switcher */}
+          <View style={styles.topBar}>
+            <TouchableOpacity
+              style={[
+                styles.themeBtn,
+                { backgroundColor: colors.cardElevated, borderColor: colors.cardBorder },
+              ]}
+              onPress={toggleTheme}
+            >
+              {isDark ? <Sun size={16} color="#FBBF24" /> : <Moon size={16} color={colors.primary} />}
+            </TouchableOpacity>
+          </View>
+
           {/* Logo & Hero */}
           <View style={styles.brandHero}>
-            <View style={styles.logoCircle}>
-              <Gauge size={38} color={COLORS.primary} />
+            <View
+              style={[
+                styles.logoCircle,
+                { backgroundColor: colors.primaryLight, borderColor: isDark ? '#263830' : '#D0E3DA' },
+              ]}
+            >
+              <Gauge size={38} color={colors.primary} />
             </View>
-            <Text style={styles.brandTitle}>DriverPulse</Text>
-            <Text style={styles.brandSubtitle}>
-              Assistente financeiro e operacional para motoristas profissionais.
+            <Text style={[styles.brandTitle, { color: colors.textPrimary }]}>DriverPulse</Text>
+            <Text style={[styles.brandSubtitle, { color: colors.textSecondary }]}>
+              Assistente financeiro e operacional com inteligência de custos para motoristas.
             </Text>
           </View>
 
@@ -74,7 +93,7 @@ export default function LoginScreen() {
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
-              leftIcon={<Mail size={18} color={COLORS.textSecondary} />}
+              leftIcon={<Mail size={18} color={colors.textSecondary} />}
             />
 
             <Input
@@ -83,7 +102,7 @@ export default function LoginScreen() {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              leftIcon={<Lock size={18} color={COLORS.textSecondary} />}
+              leftIcon={<Lock size={18} color={colors.textSecondary} />}
             />
 
             <Button
@@ -91,7 +110,7 @@ export default function LoginScreen() {
               variant="primary"
               size="lg"
               loading={loading}
-              rightIcon={<ArrowRight size={18} color="#FFFFFF" />}
+              rightIcon={<ArrowRight size={18} color="#091A12" />}
               onPress={handleLogin}
               style={styles.loginBtn}
             />
@@ -99,15 +118,17 @@ export default function LoginScreen() {
             <Button
               title="Acessar Modo Demonstração (Sem Login)"
               variant="secondary"
-              leftIcon={<Sparkles size={16} color={COLORS.warning} />}
+              leftIcon={<Sparkles size={16} color={colors.warning} />}
               onPress={handleGuest}
               style={styles.guestBtn}
             />
 
             <View style={styles.registerPrompt}>
-              <Text style={styles.registerPromptText}>Não possui conta? </Text>
+              <Text style={[styles.registerPromptText, { color: colors.textMuted }]}>
+                Não possui conta?{' '}
+              </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/register' as any)}>
-                <Text style={styles.registerLink}>Cadastre-se grátis</Text>
+                <Text style={[styles.registerLink, { color: colors.primary }]}>Cadastre-se grátis</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -120,7 +141,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   container: {
     flex: 1,
@@ -130,44 +150,52 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: '100%',
   },
+  topBar: {
+    alignItems: 'flex-end',
+    marginBottom: 8,
+  },
+  themeBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   brandHero: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
   logoCircle: {
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   brandTitle: {
     fontSize: 28,
     fontWeight: '900',
-    color: COLORS.textPrimary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
   },
   brandSubtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     marginTop: 6,
     paddingHorizontal: 20,
-    lineHeight: 18,
+    lineHeight: 19,
   },
   form: {
     gap: 4,
   },
   loginBtn: {
-    borderRadius: 14,
+    borderRadius: 20,
     marginTop: 8,
   },
   guestBtn: {
-    borderRadius: 14,
+    borderRadius: 20,
     marginTop: 10,
   },
   registerPrompt: {
@@ -177,11 +205,9 @@ const styles = StyleSheet.create({
   },
   registerPromptText: {
     fontSize: 13,
-    color: COLORS.textMuted,
   },
   registerLink: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.primary,
   },
 });

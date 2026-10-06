@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Play, Square, Clock, Gauge, ArrowRight } from 'lucide-react-native';
 import { Card } from '../ui/Card';
 import { Shift } from '../../types/database.types';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 import { formatDurationFromSeconds } from '../../utils/formatters';
 
 interface ShiftStatusBannerProps {
@@ -18,6 +18,7 @@ export const ShiftStatusBanner: React.FC<ShiftStatusBannerProps> = ({
   onStartShiftPress,
   onEndShiftPress,
 }) => {
+  const { colors, isDark } = useTheme();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -40,21 +41,26 @@ export const ShiftStatusBanner: React.FC<ShiftStatusBannerProps> = ({
 
   if (!activeShift) {
     return (
-      <Card style={[styles.card, styles.inactiveCard]}>
+      <Card style={styles.card}>
         <View style={styles.contentRow}>
           <View style={styles.left}>
-            <View style={styles.statusDotInactive} />
-            <View>
-              <Text style={styles.inactiveTitle}>Nenhum Turno Aberto</Text>
-              <Text style={styles.inactiveSubtitle}>Inicie o turno para rastrear seus ganhos e km</Text>
+            <View style={[styles.statusDotInactive, { backgroundColor: colors.textMuted }]} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.inactiveTitle, { color: colors.textPrimary }]}>
+                Nenhum Turno Aberto
+              </Text>
+              <Text style={[styles.inactiveSubtitle, { color: colors.textMuted }]}>
+                Inicie para rastrear km e ganhos em tempo real
+              </Text>
             </View>
           </View>
+
           <TouchableOpacity
-            style={styles.startButton}
+            style={[styles.startButton, { backgroundColor: colors.primary }]}
             onPress={onStartShiftPress}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
+            <Play size={14} color="#091A12" fill="#091A12" />
             <Text style={styles.startButtonText}>Iniciar</Text>
           </TouchableOpacity>
         </View>
@@ -63,46 +69,66 @@ export const ShiftStatusBanner: React.FC<ShiftStatusBannerProps> = ({
   }
 
   return (
-    <Card style={[styles.card, styles.activeCard]}>
+    <Card
+      style={[
+        styles.card,
+        {
+          backgroundColor: isDark ? '#14221B' : '#E8F5EE',
+          borderColor: colors.primary,
+          borderWidth: 1.5,
+        },
+      ]}
+    >
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={() => router.push('/(tabs)/shift' as any)}
       >
         <View style={styles.activeHeader}>
           <View style={styles.activeBadgeRow}>
-            <View style={styles.statusDotActive} />
-            <Text style={styles.activeStatusText}>TURNO EM ANDAMENTO</Text>
+            <View style={[styles.statusDotActive, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.activeStatusText, { color: colors.primary }]}>
+              TURNO EM ANDAMENTO
+            </Text>
           </View>
-          <ArrowRight size={16} color={COLORS.textSecondary} />
+          <ArrowRight size={16} color={colors.textSecondary} />
         </View>
 
-        <View style={styles.activeInfoRow}>
+        <View
+          style={[
+            styles.activeInfoRow,
+            { backgroundColor: isDark ? colors.cardElevated : colors.card },
+          ]}
+        >
           <View style={styles.infoItem}>
-            <Clock size={16} color={COLORS.warning} />
+            <Clock size={16} color={colors.warning} />
             <View>
-              <Text style={styles.infoLabel}>Tempo Rodando</Text>
-              <Text style={styles.timerValue}>{formatDurationFromSeconds(elapsedSeconds)}</Text>
+              <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Tempo Rodando</Text>
+              <Text style={[styles.timerValue, { color: colors.textPrimary }]}>
+                {formatDurationFromSeconds(elapsedSeconds)}
+              </Text>
             </View>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.cardBorder }]} />
 
           <View style={styles.infoItem}>
-            <Gauge size={16} color={COLORS.info} />
+            <Gauge size={16} color={colors.info} />
             <View>
-              <Text style={styles.infoLabel}>Hodômetro Inicial</Text>
-              <Text style={styles.kmValue}>{activeShift.start_km.toLocaleString('pt-BR')} km</Text>
+              <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Hodômetro Inicial</Text>
+              <Text style={[styles.kmValue, { color: colors.textPrimary }]}>
+                {activeShift.start_km.toLocaleString('pt-BR')} km
+              </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.footerActions}>
           <TouchableOpacity
-            style={styles.endShiftButton}
+            style={[styles.endShiftButton, { backgroundColor: colors.danger }]}
             onPress={onEndShiftPress}
             activeOpacity={0.8}
           >
-            <Square size={14} color="#FFFFFF" fill="#FFFFFF" />
+            <Square size={13} color="#FFFFFF" fill="#FFFFFF" />
             <Text style={styles.endShiftButtonText}>Encerrar Turno</Text>
           </TouchableOpacity>
         </View>
@@ -115,15 +141,6 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 16,
     padding: 16,
-  },
-  inactiveCard: {
-    backgroundColor: COLORS.card,
-    borderColor: COLORS.cardBorder,
-  },
-  activeCard: {
-    backgroundColor: '#1E1E2E',
-    borderColor: COLORS.warning,
-    borderWidth: 1.5,
   },
   contentRow: {
     flexDirection: 'row',
@@ -140,88 +157,78 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.textMuted,
     marginRight: 12,
   },
   statusDotActive: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.warning,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     marginRight: 8,
   },
   inactiveTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontSize: 14,
+    fontWeight: '800',
   },
   inactiveSubtitle: {
-    fontSize: 12,
-    color: COLORS.textMuted,
+    fontSize: 11,
     marginTop: 2,
   },
   startButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingVertical: 10,
+    paddingVertical: 9,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 16,
     gap: 6,
   },
   startButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 14,
+    color: '#091A12',
+    fontWeight: '800',
+    fontSize: 13,
   },
   activeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   activeBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   activeStatusText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.warning,
-    letterSpacing: 0.5,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.6,
   },
   activeInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: COLORS.cardElevated,
     padding: 12,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: 14,
+    marginBottom: 10,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   infoLabel: {
-    fontSize: 11,
-    color: COLORS.textMuted,
+    fontSize: 10,
+    fontWeight: '600',
   },
   timerValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    color: COLORS.textPrimary,
   },
   kmValue: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontSize: 14,
+    fontWeight: '800',
   },
   divider: {
     width: 1,
     height: '80%',
-    backgroundColor: COLORS.cardBorder,
   },
   footerActions: {
     flexDirection: 'row',
@@ -230,15 +237,14 @@ const styles = StyleSheet.create({
   endShiftButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.danger,
-    paddingVertical: 8,
+    paddingVertical: 7,
     paddingHorizontal: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     gap: 6,
   },
   endShiftButtonText: {
     color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 13,
+    fontWeight: '800',
+    fontSize: 12,
   },
 });

@@ -4,8 +4,8 @@ import { Trash2, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { Transaction } from '../../types/database.types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
-import { COLORS } from '../../constants/theme';
-import { formatBRL, formatTimeOnly, formatDateOnly } from '../../utils/formatters';
+import { useTheme } from '../../stores/useThemeStore';
+import { formatBRL, formatTimeOnly } from '../../utils/formatters';
 
 interface RecentTransactionsListProps {
   transactions: Transaction[];
@@ -18,6 +18,7 @@ export const RecentTransactionsList: React.FC<RecentTransactionsListProps> = ({
   onDeleteTransaction,
   limit = 5,
 }) => {
+  const { colors } = useTheme();
   const displayed = transactions.slice(0, limit);
 
   const confirmDelete = (tx: Transaction) => {
@@ -38,9 +39,11 @@ export const RecentTransactionsList: React.FC<RecentTransactionsListProps> = ({
   if (displayed.length === 0) {
     return (
       <Card style={styles.emptyCard}>
-        <Text style={styles.emptyTitle}>Nenhuma movimentação recente</Text>
-        <Text style={styles.emptySubtitle}>
-          Use os botões acima para registrar seus ganhos e despesas rapidamente.
+        <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>
+          Nenhuma movimentação recente
+        </Text>
+        <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+          Use os botões de ação rápida para registrar seus ganhos e despesas.
         </Text>
       </Card>
     );
@@ -58,31 +61,36 @@ export const RecentTransactionsList: React.FC<RecentTransactionsListProps> = ({
                 <View
                   style={[
                     styles.iconBox,
-                    isIncome ? styles.incomeIconBox : styles.expenseIconBox,
+                    {
+                      backgroundColor: isIncome ? colors.primaryLight : colors.dangerLight,
+                    },
                   ]}
                 >
                   {isIncome ? (
-                    <TrendingUp size={16} color={COLORS.primary} />
+                    <TrendingUp size={16} color={colors.primary} />
                   ) : (
-                    <TrendingDown size={16} color={COLORS.danger} />
+                    <TrendingDown size={16} color={colors.danger} />
                   )}
                 </View>
 
                 <View style={styles.detailsCol}>
                   <View style={styles.badgeRow}>
                     <Badge category={tx.category} type={tx.type} />
-                    <Text style={styles.timeText}>
+                    <Text style={[styles.timeText, { color: colors.textMuted }]}>
                       {formatTimeOnly(tx.created_at)}
                     </Text>
                   </View>
                   {tx.notes ? (
-                    <Text style={styles.notesText} numberOfLines={1}>
+                    <Text
+                      style={[styles.notesText, { color: colors.textSecondary }]}
+                      numberOfLines={1}
+                    >
                       {tx.notes}
                     </Text>
                   ) : null}
                   {tx.fuel_liters ? (
-                    <Text style={styles.fuelText}>
-                      {tx.fuel_liters}L • Hodômetro: {tx.odometer_km} km
+                    <Text style={[styles.fuelText, { color: colors.warning }]}>
+                      {tx.fuel_liters}L • {tx.odometer_km} km
                     </Text>
                   ) : null}
                 </View>
@@ -92,7 +100,7 @@ export const RecentTransactionsList: React.FC<RecentTransactionsListProps> = ({
                 <Text
                   style={[
                     styles.amountText,
-                    isIncome ? styles.incomeAmount : styles.expenseAmount,
+                    { color: isIncome ? colors.primary : colors.danger },
                   ]}
                 >
                   {isIncome ? '+' : '-'} {formatBRL(tx.amount)}
@@ -103,7 +111,7 @@ export const RecentTransactionsList: React.FC<RecentTransactionsListProps> = ({
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   style={styles.deleteButton}
                 >
-                  <Trash2 size={14} color={COLORS.textMuted} />
+                  <Trash2 size={13} color={colors.textMuted} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -125,17 +133,16 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: COLORS.textSecondary,
     marginBottom: 4,
   },
   emptySubtitle: {
     fontSize: 12,
-    color: COLORS.textMuted,
     textAlign: 'center',
     paddingHorizontal: 16,
   },
   txCard: {
     padding: 12,
+    borderRadius: 18,
   },
   txRow: {
     flexDirection: 'row',
@@ -151,16 +158,10 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-  },
-  incomeIconBox: {
-    backgroundColor: COLORS.primaryLight,
-  },
-  expenseIconBox: {
-    backgroundColor: COLORS.dangerLight,
   },
   detailsCol: {
     flex: 1,
@@ -173,17 +174,15 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 11,
-    color: COLORS.textMuted,
   },
   notesText: {
     fontSize: 12,
-    color: COLORS.textSecondary,
     marginTop: 2,
   },
   fuelText: {
     fontSize: 11,
-    color: COLORS.warning,
     marginTop: 2,
+    fontWeight: '600',
   },
   rightCol: {
     alignItems: 'flex-end',
@@ -192,12 +191,6 @@ const styles = StyleSheet.create({
   amountText: {
     fontSize: 15,
     fontWeight: '800',
-  },
-  incomeAmount: {
-    color: COLORS.primary,
-  },
-  expenseAmount: {
-    color: COLORS.danger,
   },
   deleteButton: {
     padding: 2,

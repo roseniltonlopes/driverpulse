@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Clock, Gauge, DollarSign, Fuel, AlertCircle } from 'lucide-react-native';
 import { Card } from '../ui/Card';
 import { Shift, DashboardMetrics } from '../../types/database.types';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../stores/useThemeStore';
 import { formatBRL, formatDurationFromSeconds } from '../../utils/formatters';
 
 interface ActiveShiftCardProps {
@@ -15,6 +15,7 @@ export const ActiveShiftCard: React.FC<ActiveShiftCardProps> = ({
   activeShift,
   metrics,
 }) => {
+  const { colors, isDark } = useTheme();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -31,44 +32,55 @@ export const ActiveShiftCard: React.FC<ActiveShiftCardProps> = ({
   }, [activeShift]);
 
   return (
-    <Card style={styles.card}>
+    <Card
+      style={[
+        styles.card,
+        {
+          backgroundColor: isDark ? '#14221B' : '#E8F5EE',
+          borderColor: colors.primary,
+          borderWidth: 1.5,
+        },
+      ]}
+    >
       <View style={styles.header}>
-        <View style={styles.badge}>
-          <View style={styles.pulseDot} />
-          <Text style={styles.badgeText}>TURNO ATIVO</Text>
+        <View style={[styles.badge, { backgroundColor: colors.tagBg, borderColor: colors.primary }]}>
+          <View style={[styles.pulseDot, { backgroundColor: colors.primary }]} />
+          <Text style={[styles.badgeText, { color: colors.primary }]}>TURNO ATIVO</Text>
         </View>
-        <Text style={styles.timerText}>{formatDurationFromSeconds(elapsedSeconds)}</Text>
+        <Text style={[styles.timerText, { color: colors.textPrimary }]}>
+          {formatDurationFromSeconds(elapsedSeconds)}
+        </Text>
       </View>
 
       <View style={styles.mainMetricsGrid}>
-        <View style={styles.metricBox}>
-          <Text style={styles.metricLabel}>Faturamento</Text>
-          <Text style={[styles.metricValue, { color: COLORS.primary }]}>
+        <View style={[styles.metricBox, { backgroundColor: isDark ? colors.cardElevated : colors.card }]}>
+          <Text style={[styles.metricLabel, { color: colors.textMuted }]}>Faturamento</Text>
+          <Text style={[styles.metricValue, { color: colors.primary }]}>
             {formatBRL(metrics.totalGrossIncome)}
           </Text>
         </View>
 
-        <View style={styles.metricBox}>
-          <Text style={styles.metricLabel}>Despesas Diretas</Text>
-          <Text style={[styles.metricValue, { color: COLORS.danger }]}>
+        <View style={[styles.metricBox, { backgroundColor: isDark ? colors.cardElevated : colors.card }]}>
+          <Text style={[styles.metricLabel, { color: colors.textMuted }]}>Despesas</Text>
+          <Text style={[styles.metricValue, { color: colors.danger }]}>
             {formatBRL(metrics.totalDirectExpenses)}
           </Text>
         </View>
       </View>
 
-      <View style={styles.detailsGrid}>
+      <View style={[styles.detailsGrid, { backgroundColor: isDark ? colors.cardElevated : colors.card }]}>
         <View style={styles.detailRow}>
-          <Gauge size={16} color={COLORS.info} />
-          <Text style={styles.detailLabel}>Hodômetro Inicial:</Text>
-          <Text style={styles.detailValue}>
+          <Gauge size={16} color={colors.info} />
+          <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Hodômetro Inicial:</Text>
+          <Text style={[styles.detailValue, { color: colors.textPrimary }]}>
             {activeShift.start_km.toLocaleString('pt-BR')} km
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Clock size={16} color={COLORS.warning} />
-          <Text style={styles.detailLabel}>Início:</Text>
-          <Text style={styles.detailValue}>
+          <Clock size={16} color={colors.warning} />
+          <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Início:</Text>
+          <Text style={[styles.detailValue, { color: colors.textPrimary }]}>
             {new Date(activeShift.start_time).toLocaleTimeString('pt-BR', {
               hour: '2-digit',
               minute: '2-digit',
@@ -82,11 +94,9 @@ export const ActiveShiftCard: React.FC<ActiveShiftCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#161B26',
-    borderColor: COLORS.warning,
-    borderWidth: 1.5,
     padding: 18,
     marginBottom: 20,
+    borderRadius: 22,
   },
   header: {
     flexDirection: 'row',
@@ -97,20 +107,18 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.warningLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 20,
+    borderWidth: 1,
     gap: 6,
   },
   pulseDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.warning,
   },
   badgeText: {
-    color: COLORS.warning,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.5,
@@ -118,33 +126,29 @@ const styles = StyleSheet.create({
   timerText: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.textPrimary,
-    fontVariant: ['tabular-nums'],
   },
   mainMetricsGrid: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   metricBox: {
     flex: 1,
-    backgroundColor: COLORS.cardElevated,
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 16,
   },
   metricLabel: {
-    fontSize: 12,
-    color: COLORS.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
     marginBottom: 4,
   },
   metricValue: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   detailsGrid: {
-    backgroundColor: COLORS.cardElevated,
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 16,
     gap: 8,
   },
   detailRow: {
@@ -154,12 +158,10 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     flex: 1,
   },
   detailValue: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontWeight: '800',
   },
 });

@@ -1,44 +1,110 @@
-export const COLORS = {
-  // Base backgrounds
-  background: '#0B0F19',
-  card: '#151D30',
-  cardElevated: '#1E293B',
-  cardBorder: '#2A364F',
+export interface ThemeColors {
+  background: string;
+  backgroundSecondary: string;
+  card: string;
+  cardElevated: string;
+  cardBorder: string;
+  cardGlow: string;
   
-  // Text
-  textPrimary: '#F8FAFC',
-  textSecondary: '#94A3B8',
-  textMuted: '#64748B',
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
   
-  // Accents
-  primary: '#10B981', // Emerald - Profit / Primary
+  primary: string;
+  primaryDark: string;
+  primaryLight: string;
+  primaryGradient: [string, string];
+  
+  danger: string;
+  dangerLight: string;
+  
+  warning: string;
+  warningLight: string;
+  
+  info: string;
+  infoLight: string;
+
+  tagBg: string;
+  tagBorder: string;
+
+  tabBarBg: string;
+  tabBarBorder: string;
+  tabBarActive: string;
+  tabBarInactive: string;
+}
+
+export const DARK_THEME: ThemeColors = {
+  // Deep matte dark sage/black from the inspiration screenshot
+  background: '#0D1311',
+  backgroundSecondary: '#111815',
+  card: '#16201C',
+  cardElevated: '#1D2A24',
+  cardBorder: '#273830',
+  cardGlow: 'rgba(0, 229, 153, 0.12)',
+
+  textPrimary: '#FFFFFF',
+  textSecondary: '#9CB3A8',
+  textMuted: '#63786F',
+
+  // Radiant Mint / Emerald accent
+  primary: '#00E599',
   primaryDark: '#059669',
-  primaryLight: 'rgba(16, 185, 129, 0.15)',
-  
-  danger: '#EF4444', // Red - Expense / Alert
-  dangerLight: 'rgba(239, 68, 68, 0.15)',
-  
-  warning: '#F59E0B', // Amber - Fuel / Warning / Open Shift
-  warningLight: 'rgba(245, 158, 11, 0.15)',
-  
-  info: '#3B82F6', // Blue - Metrics / Shift info
-  infoLight: 'rgba(59, 130, 246, 0.15)',
-  
-  purple: '#8B5CF6',
-  purpleLight: 'rgba(139, 92, 246, 0.15)',
+  primaryLight: 'rgba(0, 229, 153, 0.14)',
+  primaryGradient: ['#00E599', '#059669'],
 
-  // Platform Colors
-  platformUber: '#000000',
-  platformUberBorder: '#38BDF8',
-  platform99: '#F97316',
-  platformInDrive: '#10B981',
-  platformPrivate: '#8B5CF6',
+  danger: '#F87171',
+  dangerLight: 'rgba(248, 113, 113, 0.16)',
 
-  // Category Colors
-  categoryFuel: '#F59E0B',
-  categoryFood: '#EC4899',
-  categoryMaintenance: '#6366F1',
-  categoryOther: '#64748B',
+  warning: '#FBBF24',
+  warningLight: 'rgba(251, 191, 36, 0.16)',
+
+  info: '#38BDF8',
+  infoLight: 'rgba(56, 189, 248, 0.16)',
+
+  tagBg: '#212E28',
+  tagBorder: '#2D3F37',
+
+  tabBarBg: '#111815',
+  tabBarBorder: '#1F2B25',
+  tabBarActive: '#00E599',
+  tabBarInactive: '#63786F',
+};
+
+export const LIGHT_THEME: ThemeColors = {
+  // Fresh, airy mint-tinted light theme
+  background: '#F2F7F4',
+  backgroundSecondary: '#E8F1EC',
+  card: '#FFFFFF',
+  cardElevated: '#F9FCFA',
+  cardBorder: '#DCE8E2',
+  cardGlow: 'rgba(5, 150, 105, 0.08)',
+
+  textPrimary: '#111A16',
+  textSecondary: '#4A5E55',
+  textMuted: '#7D948B',
+
+  // Rich Emerald for crisp contrast on light backgrounds
+  primary: '#059669',
+  primaryDark: '#047857',
+  primaryLight: 'rgba(5, 150, 105, 0.12)',
+  primaryGradient: ['#10B981', '#059669'],
+
+  danger: '#EF4444',
+  dangerLight: 'rgba(239, 68, 68, 0.12)',
+
+  warning: '#D97706',
+  warningLight: 'rgba(217, 119, 6, 0.12)',
+
+  info: '#0284C7',
+  infoLight: 'rgba(2, 132, 199, 0.12)',
+
+  tagBg: '#E7F2EC',
+  tagBorder: '#D3E4DB',
+
+  tabBarBg: '#FFFFFF',
+  tabBarBorder: '#E0EAE4',
+  tabBarActive: '#059669',
+  tabBarInactive: '#82978E',
 };
 
 export const PLATFORM_INFO: Record<string, { label: string; color: string; badgeBg: string; textColor: string }> = {
@@ -56,9 +122,9 @@ export const PLATFORM_INFO: Record<string, { label: string; color: string; badge
   },
   INDRIVE: {
     label: 'inDrive',
-    color: '#10B981',
-    badgeBg: 'rgba(16, 185, 129, 0.18)',
-    textColor: '#34D399',
+    color: '#00E599',
+    badgeBg: 'rgba(0, 229, 153, 0.18)',
+    textColor: '#00E599',
   },
   PRIVATE: {
     label: 'Particular',
@@ -71,8 +137,8 @@ export const PLATFORM_INFO: Record<string, { label: string; color: string; badge
 export const EXPENSE_INFO: Record<string, { label: string; color: string; badgeBg: string; textColor: string }> = {
   FUEL: {
     label: 'Combustível',
-    color: '#F59E0B',
-    badgeBg: 'rgba(245, 158, 11, 0.18)',
+    color: '#FBBF24',
+    badgeBg: 'rgba(251, 191, 36, 0.18)',
     textColor: '#FBBF24',
   },
   FOOD: {
@@ -83,14 +149,17 @@ export const EXPENSE_INFO: Record<string, { label: string; color: string; badgeB
   },
   MAINTENANCE: {
     label: 'Manutenção / Óleo',
-    color: '#6366F1',
-    badgeBg: 'rgba(99, 102, 241, 0.18)',
+    color: '#818CF8',
+    badgeBg: 'rgba(129, 140, 248, 0.18)',
     textColor: '#818CF8',
   },
   OTHER: {
     label: 'Outros Custos',
-    color: '#64748B',
-    badgeBg: 'rgba(100, 116, 139, 0.18)',
+    color: '#94A3B8',
+    badgeBg: 'rgba(148, 163, 184, 0.18)',
     textColor: '#94A3B8',
   },
 };
+
+// Backward-compatible static COLORS export matching active Dark Theme
+export const COLORS = DARK_THEME;
